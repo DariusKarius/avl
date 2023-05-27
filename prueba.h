@@ -60,8 +60,8 @@ public:
         Entry<TK, TV> entry(key, value);
         insert(this->root, entry);
     }
-    bool find(TK key) {
-        return find(this->root, key);
+    bool find(TK value) {
+        return find(this->root, value);
     }
 
     string getInOrder() {
@@ -134,7 +134,7 @@ public:
 private:
     string getInOrder(NodeT<TK, TV>* node);
     void insert(NodeT<TK, TV>*& node, Entry<TK, TV> entry);
-    bool find(NodeT<TK, TV>* node, TK key);
+    bool find(NodeT<TK, TV>* node, TV value);
     int height(NodeT<TK, TV>* node);
     bool isBalanced(NodeT<TK, TV>* node);
     Entry<TK, TV> minValue(NodeT<TK, TV>* node);
@@ -156,13 +156,13 @@ private:
 };
 
 template <typename TK, typename TV>
-bool AVLTree2<TK, TV>::find(NodeT<TK, TV>* node, TK key) {
+bool AVLTree2<TK, TV>::find(NodeT<TK, TV>* node, TV value) {
     if (node == nullptr)
         return false;
-    else if (key < node->data.key)
-        return find(node->left, key);
-    else if (key > node->data.key)
-        return find(node->right, key);
+    else if (value < node->data.value)
+        return find(node->left, value);
+    else if (value > node->data.value)
+        return find(node->right, value);
     else
         return true;
 }
@@ -209,7 +209,7 @@ string AVLTree2<TK, TV>::getInOrder(NodeT<TK, TV>* node) {
     string result = "";
     if (node != nullptr) {
         result += getInOrder(node->left);
-        result += node->data.key + " - " + node->data.value + "\n";
+        result += to_string(node->data.key) + " - " + to_string(node->data.value) + ' ';
         result += getInOrder(node->right);
     }
     return result;
@@ -219,7 +219,7 @@ template <typename TK, typename TV>
 void AVLTree2<TK, TV>::insert(NodeT<TK, TV>*& node, Entry<TK, TV> entry) {
     if (node == nullptr)
         node = new NodeT<TK, TV>(entry);
-    else if (entry.key < node->data.key)
+    else if (entry.value < node->data.value)
         insert(node->left, entry);
     else
         insert(node->right, entry);
@@ -291,11 +291,11 @@ void AVLTree2<TK, TV>::remove(NodeT<TK, TV>*& node, TK key) {
     else if (key > node->data.key)
         remove(node->right, key);
     else {
-        if (node->left == nullptr && node->right == nullptr) { //no children
+        if (node->left == nullptr && node->right == nullptr) {
             delete node;
             node = nullptr;
         }
-        else if (node->left != nullptr && node->right == nullptr) { //only left child
+        else if (node->left != nullptr && node->right == nullptr) {
             NodeT<TK, TV>* temp = node;
             node = node->left;
             delete temp;
@@ -325,7 +325,7 @@ void AVLTree2<TK, TV>::displayPretty(NodeT<TK, TV>* node, int level) {
             cout << "Root -> ";
         for (int i = 0; i < level && node != root; i++)
             cout << "        ";
-        cout << node->data.key;
+        cout << node->data.key << '|' << node->data.value;
         displayPretty(node->left, level + 1);
     }
 }
@@ -346,7 +346,7 @@ template <typename TK, typename TV>
 Entry<TK, TV> AVLTree2<TK, TV>::if_not_found_succesor(NodeT<TK, TV>* node, Entry<TK, TV> entry) {
     if (node == nullptr)
         return entry;
-    if (entry.key < node->data.key) {
+    if (entry.value < node->data.value) {
         entry = node->data;
         return if_not_found_succesor(node->left, entry);
     }
@@ -358,7 +358,7 @@ template <typename TK, typename TV>
 Entry<TK, TV> AVLTree2<TK, TV>::if_not_found_predecesor(NodeT<TK, TV>* node, Entry<TK, TV> entry) {
     if (node == nullptr)
         return entry;
-    if (entry.key > node->data.key) {
+    if (entry.value > node->data.value) {
         entry = node->data;
         return if_not_found_predecesor(node->right, entry);
     }
@@ -370,11 +370,11 @@ template <typename TK, typename TV>
 string AVLTree2<TK, TV>::search_by_range(NodeT<TK, TV>* node, TK begin, TK end) {
     string result = "";
     if (node != nullptr) {
-        if (node->data.key > begin)
+        if (node->data.value > begin)
             result += search_by_range(node->left, begin, end);
-        if (node->data.key >= begin && node->data.key <= end)
-            result += node->data.key + " - " + node->data.value + "\n";
-        if (node->data.key < end)
+        if (node->data.value >= begin && node->data.value <= end)
+            result += std::to_string(node->data.key) + " - " + to_string(node->data.value) + ' ';
+        if (node->data.value < end)
             result += search_by_range(node->right, begin, end);
     }
     return result;
