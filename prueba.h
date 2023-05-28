@@ -96,28 +96,22 @@ public:
         displayPretty(this->root, 1);
     }
 
-    Entry<TK, TV> minValue_wp(NodeT<TK, TV>* node) {
-        while (node->left != nullptr)
-            node = node->left;
-        return node->data;
-    }
-
     TK successor(TK key) {
         Entry<TK, TV> entry(key, TV());
         return successor(root, entry).key;
     }
 
-    TK if_not_found_succesor(TK key) {
-        Entry<TK, TV> entry(key, TV());
-        return if_not_found_succesor(root, entry).key;
+    TK if_not_found_succesor(TV value) {
+        Entry<TK, TV> entry(TK(), value);
+        return if_not_found_succesor(root, entry).value;
     }
 
-    TK if_not_found_predecesor(TK key) {
-        Entry<TK, TV> entry(key, TV());
-        return if_not_found_predecesor(root, entry).key;
+    TK if_not_found_predecesor(TV value) {
+        Entry<TK, TV> entry(TK(), value);
+        return if_not_found_predecesor(root, entry).value;
     }
 
-    string search_by_range(TK begin, TK end) {
+    string search_by_range(TV begin, TV end) {
         if (!find(begin))
             begin = if_not_found_succesor(begin);
         if (!find(end))
@@ -150,7 +144,7 @@ private:
     void balance(NodeT<TK, TV>*& node);
     void left_rota(NodeT<TK, TV>*& node);
     void right_rota(NodeT<TK, TV>*& node);
-    string search_by_range(NodeT<TK, TV>* node, TK begin, TK end);
+    string search_by_range(NodeT<TK, TV>* node, TV begin, TV end);
     Entry<TK, TV> if_not_found_succesor(NodeT<TK, TV>* node, Entry<TK, TV> entry);
     Entry<TK, TV> if_not_found_predecesor(NodeT<TK, TV>* node, Entry<TK, TV> entry);
 };
@@ -334,7 +328,7 @@ template <typename TK, typename TV>
 Entry<TK, TV> AVLTree2<TK, TV>::successor(NodeT<TK, TV>* node, Entry<TK, TV> entry) {
     if (node == nullptr)
         return entry;
-    if (entry.key < node->data.key) {
+    if (entry.value < node->data.value) {
         entry = node->data;
         return successor(node->left, entry);
     }
@@ -344,38 +338,45 @@ Entry<TK, TV> AVLTree2<TK, TV>::successor(NodeT<TK, TV>* node, Entry<TK, TV> ent
 
 template <typename TK, typename TV>
 Entry<TK, TV> AVLTree2<TK, TV>::if_not_found_succesor(NodeT<TK, TV>* node, Entry<TK, TV> entry) {
-    if (node == nullptr)
-        return entry;
-    if (entry.value < node->data.value) {
-        entry = node->data;
-        return if_not_found_succesor(node->left, entry);
+    stack<Entry<TK,TV>> mstack;
+    while(node!= nullptr){
+        if(node->data.value > entry.value){
+            mstack.push(node->data);
+            node = node -> left;
+        }
+        else if(node->data.value < entry.value){
+            node = node->right;
+        }
     }
-    else
-        return if_not_found_succesor(node->right, entry);
+    return mstack.top();
 }
 
 template <typename TK, typename TV>
 Entry<TK, TV> AVLTree2<TK, TV>::if_not_found_predecesor(NodeT<TK, TV>* node, Entry<TK, TV> entry) {
-    if (node == nullptr)
-        return entry;
-    if (entry.value > node->data.value) {
-        entry = node->data;
-        return if_not_found_predecesor(node->right, entry);
+    queue<Entry<TK,TV>> mqueue;
+    while(node!= nullptr){
+        if(node->data.value > entry.value)
+            node = node -> left;
+        else if(node->data.value < entry.value){
+            mqueue.push(node->data);
+            node = node->right;
+        }
     }
-    else
-        return if_not_found_predecesor(node->left, entry);
+    return mqueue.front();
 }
 
 template <typename TK, typename TV>
-string AVLTree2<TK, TV>::search_by_range(NodeT<TK, TV>* node, TK begin, TK end) {
+string AVLTree2<TK, TV>::search_by_range(NodeT<TK, TV>* node, TV begin, TV end) {
     string result = "";
     if (node != nullptr) {
         if (node->data.value > begin)
             result += search_by_range(node->left, begin, end);
         if (node->data.value >= begin && node->data.value <= end)
-            result += std::to_string(node->data.key) + " - " + to_string(node->data.value) + ' ';
+            result += to_string(node->data.key) + " - " + to_string(node->data.value) + ' ';
         if (node->data.value < end)
             result += search_by_range(node->right, begin, end);
     }
+    return result;
+}
     return result;
 }
